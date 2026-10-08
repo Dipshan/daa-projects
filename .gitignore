@@ -1,0 +1,31 @@
+# macOS
+.DS_Store
+._*
+
+# Compiled binaries (from .cpp files)
+intervalScheduling
+enhancingQuicksort
+countingInversions
+*.exe
+*.out
+
+# Object files
+*.o
+*.obj
+
+# Build directories
+build/
+bin/
+obj/
+
+# IDE
+.vscode/
+.idea/
+.vs/
+*.swp
+*~
+
+# Logs and temp
+*.log
+*.tmp
+*.bak
