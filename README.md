@@ -7,22 +7,21 @@
 
 ## Table of Contents
 
-| #   | Section                                                
-| :-- | :---------------------------------------------------------------
-| 1   | [Overview](#overview)
-| 2   | [Repository Structure](#repository-structure)
-| 3   | [Project 1: Interval Scheduling](#project-1-interval-scheduling)
-| 4   | [Project 2: Enhancing Quicksort](#project-2-enhancing-quicksort)
-| 5   | [Project 3: Counting Inversions](#project-3-counting-inversions)
-| 6   | [Project 4: Network Flow](#project-4-network-flow)
-| 7   | [References](#references)
-| 8   | [License](#license)
-
-
+| #   | Section                                                          |
+| :-- | :--------------------------------------------------------------- |
+| 1   | [Overview](#overview)                                            |
+| 2   | [Repository Structure](#repository-structure)                    |
+| 3   | [Project 1: Interval Scheduling](#project-1-interval-scheduling) |
+| 4   | [Project 2: Enhancing Quicksort](#project-2-enhancing-quicksort) |
+| 5   | [Project 3: Counting Inversions](#project-3-counting-inversions) |
+| 6   | [Project 4: Network Flow](#project-4-network-flow)               |
+| 7   | [Project 5: Load Balancing](#project-5-load-balancing)           |
+| 8   | [References](#references)                                        |
+| 9   | [License](#license)                                              |
 
 ## Overview
 
-This repository contains four projects completed for CS456 Design and Analysis of Algorithms. Each project explores a fundamental algorithm design paradigm through implementation, experimentation, and analysis.
+This repository contains five projects completed for CS456 Design and Analysis of Algorithms. Each project explores a fundamental algorithm design paradigm through implementation, experimentation, and analysis.
 
 | Project | Topic               | Paradigm                                 |
 | :-----: | :------------------ | :--------------------------------------- |
@@ -30,7 +29,7 @@ This repository contains four projects completed for CS456 Design and Analysis o
 |    2    | Enhancing Quicksort | Divide & Conquer / Randomized Algorithms |
 |    3    | Counting Inversions | Divide & Conquer / Sorting               |
 |    4    | Network Flow        | Network Flow / Optimization              |
-
+|    5    | Load Balancing      | Approximation / Local Search             |
 
 ## Repository Structure
 
@@ -38,10 +37,12 @@ This repository contains four projects completed for CS456 Design and Analysis o
 ├── project1_intervalScheduling.cpp                           # Project 1: Interval Scheduling
 ├── project2_enhancingQuicksort.cpp                           # Project 2: Enhancing Quicksort
 ├── project3_countingInversions.cpp                           # Project 3: Counting Inversions
+├── project5_loadBalancing.cpp                                # Project 5: Load Balancing
 ├── Project1_Interval_Scheduling_Deepshan_Adhikari.pdf        # Project 1 Report
 ├── Project2_Enhancing_Quicksort_Deepshan_Adhikari.pdf        # Project 2 Report
 ├── Project3_Counting_Inversions_Deepshan_Adhikari.pdf        # Project 3 Report
 ├── Project4_Network_Flow_Report_Deepshan_Adhikari.pdf        # Project 4 Report
+├── Project5_Load_Balancing_Deepshan_Adhikari.pdf             # Project 5 Report
 └── README.md
 ```
 
@@ -341,6 +342,123 @@ Result: Maximum flow of 3 (all requests served) with minimum total cost of 7:
 | Limitations          | Does not account for real-time traffic variations, driver behavior (refusing assignments), or special events causing demand spikes |
 | Reported degradation | Days 3, 4, and 13 due to special events held in Seoul                                                                              |
 
+---
+
+## Project 5: Load Balancing
+
+**File:** `project5_loadBalancing.cpp`  
+**Report:** `Project5_Load_Balancing_Deepshan_Adhikari.pdf`
+
+### Description
+
+Implements and compares three load balancing algorithms for assigning 200 jobs to 10 machines so that the maximum load (makespan) is minimized. The experiment runs 10 independent trials with job processing times drawn uniformly at random from 1 to 25. The lower bound on the optimal makespan is computed as the total processing time divided by the number of machines, rounded up.
+
+### Algorithms Implemented
+
+|  #  | Algorithm              |          Time Complexity          | Approximation Factor | Description                                                                                                                                                                                                    |
+| :-: | :--------------------- | :-------------------------------: | :------------------: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|  1  | List Scheduling        |              O(n·m)               |      T <= 2T\*       | Processes jobs in the given order and assigns each to the machine with the smallest current load.                                                                                                              |
+|  2  | Sorted List Scheduling |         O(n log n + n·m)          |     T <= 1.5T\*      | Sorts jobs in descending order first, then applies List Scheduling. Places the largest jobs while machines are still empty.                                                                                    |
+|  3  | Local Search           | O(n^2) per pass; total O(P^2·n^2) |   No proven bound    | Randomly partitions jobs, then repeatedly swaps jobs between machines when the swap lowers the maximum load of the two machines involved. Restarts after each improving swap until no improving swap is found. |
+
+### Proof: List Scheduling is a 2-Approximation
+
+**Claim:** Let T be the makespan produced by List Scheduling and T* the optimal makespan. Then T <= 2T*.
+
+**Notation:** Job j has processing time t_j, and L_k is the final load of machine k. Let machine i be a machine whose load equals the makespan, so L_i = T.
+
+**Lemma 1 (Average load bound):** T* >= (1/m) * sum(t_j).
+
+Proof: The total work P = sum(t_j) must be spread over m machines, and the busiest machine carries at least the average load.
+
+**Lemma 2 (Largest job bound):** T\* >= max(t_j).
+
+Proof: Some machine must run the longest job, so the makespan is at least that job's length.
+
+**Proof of the claim:** Let j be the last job assigned to machine i. Just before job j was assigned, machine i had load L_i - t_j. List Scheduling assigns each job to the machine with the smallest current load, so at that moment the load of machine i was no larger than the load of every other machine k. Loads only increase over time, so the final load of every machine k satisfies L_k >= L_i - t_j. Summing over all m machines gives:
+
+m(L_i - t_j) <= sum(L_k) = sum(t_j)
+
+Dividing by m and applying Lemma 1 yields:
+
+L*i - t_j <= (1/m) * sum(t*j) <= T*
+
+The makespan equals the load before job j plus the length of job j. Applying the inequality above to the first term and Lemma 2 to the second term gives:
+
+T = L_i = (L_i - t_j) + t_j <= T* + T* = 2T\*
+
+This proves that T <= 2T\*.
+
+**Tightness:** The bound is nearly tight. If m(m-1) unit jobs arrive first and one job of length m arrives last, List Scheduling gives T = 2m - 1 while the optimum is m. The ratio approaches 2 as m grows. This is exactly the weakness Sorted List Scheduling avoids.
+
+### Experimental Setup
+
+| Parameter        | Value                                  |
+| :--------------- | :------------------------------------- |
+| Machines         | 10                                     |
+| Jobs per trial   | 200                                    |
+| Processing times | Random integers from 1 to 25           |
+| Trials           | 10                                     |
+| Lower bound      | ceil(total processing time / machines) |
+
+### Per-Trial Results
+
+| Trial | Lower Bound | List | Sorted | Local |
+| :---: | :---------: | :--: | :----: | :---: |
+|   1   |    252.0    | 265  |  252   |  252  |
+|   2   |    254.0    | 270  |  254   |  254  |
+|   3   |    268.0    | 276  |  268   |  268  |
+|   4   |    261.0    | 269  |  261   |  261  |
+|   5   |    267.0    | 276  |  267   |  267  |
+|   6   |    231.0    | 243  |  231   |  231  |
+|   7   |    271.0    | 279  |  271   |  271  |
+|   8   |    271.0    | 282  |  271   |  271  |
+|   9   |    252.0    | 260  |  252   |  252  |
+|  10   |    256.0    | 267  |  256   |  256  |
+
+### Makespan Summary
+
+| Statistic | Lower Bound | List  | Sorted | Local |
+| :-------- | :---------: | :---: | :----: | :---: |
+| Highest   |     271     |  282  |  271   |  271  |
+| Average   |    258.3    | 268.7 | 258.3  | 258.3 |
+| Lowest    |     231     |  243  |  231   |  231  |
+
+### Observed Makespan / Lower Bound Ratios
+
+| Algorithm              | Worst  | Average | Guarantee |
+| :--------------------- | :----: | :-----: | :-------: |
+| List Scheduling        | 1.0630 | 1.0406  |     2     |
+| Sorted List Scheduling | 1.0000 | 1.0000  |    3/2    |
+| Local Search           | 1.0000 | 1.0000  |   none    |
+
+### Average Running Times
+
+| Algorithm              | Average Running Time (ms) |
+| :--------------------- | ------------------------: |
+| List Scheduling        |                    0.0117 |
+| Sorted List Scheduling |                    0.0403 |
+| Local Search           |                    8.1852 |
+
+### Key Findings
+
+|  #  | Finding                                                                                                                                                                                                                                      |
+| :-: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|  1  | Sorted List Scheduling and Local Search produced identical makespans in all 10 trials, and both matched the lower bound, while List Scheduling was consistently worse.                                                                       |
+|  2  | List Scheduling's average makespan was 268.7, about 10.4 above the average lower bound. The worst gap was 12 (trial 3: lower bound 268, List 276).                                                                                           |
+|  3  | All three algorithms satisfied their approximation guarantees by a wide margin. List Scheduling's worst ratio was 1.0630, far below its 2x guarantee. Sorted List Scheduling's worst ratio was exactly 1.0000, far below its 1.5x guarantee. |
+|  4  | Local Search was several hundred times slower than the two greedy algorithms. It averaged 8.1852 ms, about 203 times the Sorted List Scheduling average.                                                                                     |
+|  5  | On this data, Sorted List Scheduling is the best practical choice. It reached the same makespan as Local Search, has a proven 3/2-approximation guarantee, and is only about 3.4 times slower than unsorted List Scheduling.                 |
+|  6  | The results do not establish any approximation guarantee for Local Search. They only show that the algorithms behave as expected on this small random workload.                                                                              |
+
+### How to Compile & Run
+
+```bash
+g++ -std=c++17 -O2 -o loadBalancing loadBalancing.cpp
+./loadBalancing
+```
+
+---
 
 ## References
 
